@@ -1,3 +1,4 @@
+
 import os
 import requests
 from fastapi import FastAPI
@@ -8,8 +9,10 @@ app = FastAPI()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 MODEL = "gemini-2.5-flash"
 
+
 class Message(BaseModel):
     message: str
+
 
 @app.get("/")
 def home():
@@ -18,8 +21,10 @@ def home():
         "name": "My AI Partner"
     }
 
+
 @app.post("/chat")
 def chat(data: Message):
+
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent"
 
     headers = {
@@ -39,7 +44,13 @@ def chat(data: Message):
         ]
     }
 
-    response = requests.post(url, headers=headers, json=body, timeout=60)
+    response = requests.post(
+        url,
+        headers=headers,
+        json=body,
+        timeout=60
+    )
+
     result = response.json()
 
     if response.status_code != 200:
