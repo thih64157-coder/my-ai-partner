@@ -1,7 +1,9 @@
 import os
 import requests
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -32,6 +34,13 @@ def home():
     }
 
 
+@app.options("/chat")
+def chat_options():
+    return JSONResponse(
+        content={"status": "ok"}
+    )
+
+
 @app.post("/chat")
 def chat(data: Message):
 
@@ -40,7 +49,10 @@ def chat(data: Message):
             "error": "GEMINI_API_KEY is missing"
         }
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent"
+    url = (
+        f"https://generativelanguage.googleapis.com/"
+        f"v1beta/models/{MODEL}:generateContent"
+    )
 
     headers = {
         "Content-Type": "application/json",
@@ -84,4 +96,4 @@ def chat(data: Message):
     except Exception as e:
         return {
             "error": str(e)
-    }
+        }
