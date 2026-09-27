@@ -137,4 +137,45 @@ async function sendMessage() {
   // User message
   const userDiv = document.createElement("div");
   userDiv.className = "message user";
-  userDiv
+  
+userDiv.textContent = message;
+chat.appendChild(userDiv);
+
+input.value = "";
+button.disabled = true;
+
+// AI message
+const aiDiv = document.createElement("div");
+aiDiv.className = "message ai";
+aiDiv.textContent = "စောင့်ပါနော်...";
+chat.appendChild(aiDiv);
+
+chat.scrollTop = chat.scrollHeight;
+
+try {
+  const response = await fetch(API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      message: message
+    })
+  });
+
+  const data = await response.json();
+
+  aiDiv.textContent = data.reply || "ပြန်စာမရပါ။";
+
+} catch (error) {
+  aiDiv.textContent = "တစ်ခုခုမှားနေပါတယ်။ ပြန်စမ်းကြည့်ပါ။";
+}
+
+button.disabled = false;
+input.focus();
+chat.scrollTop = chat.scrollHeight;
+}
+</script>
+
+</body>
+</html>
