@@ -167,9 +167,9 @@ try {
 
   aiDiv.textContent = data.reply || "ပြန်စာမရပါ။";
 
-} catch (error) {
-  aiDiv.textContent = "တစ်ခုခုမှားနေပါတယ်။ ပြန်စမ်းကြည့်ပါ။";
-}
+}  catch (error) {
+  aiDiv.textContent = "ERROR: " + error.message;
+ }
 
 button.disabled = false;
 input.focus();
