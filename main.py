@@ -2,12 +2,20 @@
 import os
 import requests
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-MODEL = "gemini-3.8-flash"
+MODEL = "gemini-2.5-flash"
 print("GEMINI KEY EXISTS:", bool(GEMINI_API_KEY))
 
 
