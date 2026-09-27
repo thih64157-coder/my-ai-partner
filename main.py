@@ -63,9 +63,10 @@ def chat(data: Message):
     result = response.json()
 
     if response.status_code != 200:
-        return {
-            "error": result
-        }
+    return {
+        "error": result,
+        "status": response.status_code
+    }
 
     reply = result["candidates"][0]["content"]["parts"][0]["text"]
 
