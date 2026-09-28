@@ -1,8 +1,9 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="my">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>My AI Partner</title>
 
   <style>
@@ -100,13 +101,16 @@
   </div>
 
   <div id="chat">
+
     <div class="message ai">
-      မင်္ဂလာပါ 👋<br>
+      မင်္ဂလာပါ 👋
       ကျွန်တော်က My AI Partner ပါ။ ဘာမေးချင်လဲ?
     </div>
+
   </div>
 
   <div class="input-area">
+
     <input
       id="message"
       type="text"
@@ -114,7 +118,13 @@
       onkeydown="if(event.key === 'Enter') sendMessage()"
     >
 
-    <button id="send" onclick="sendMessage()">➤</button>
+    <button
+      id="send"
+      onclick="sendMessage()"
+    >
+      ➤
+    </button>
+
   </div>
 
 </div>
@@ -124,132 +134,167 @@
 const API_URL =
   "https://my-ai-partner-zgzz.onrender.com/chat";
 
+
 async function sendMessage() {
 
-  const input = document.getElementById("message");
-  const button = document.getElementById("send");
-  const chat = document.getElementById("chat");
+  const input =
+    document.getElementById("message");
 
-  const message = input.value.trim();
+  const button =
+    document.getElementById("send");
+
+  const chat =
+    document.getElementById("chat");
+
+  const message =
+    input.value.trim();
 
   if (!message) return;
 
+
   // User message
-  const userDiv = document.createElement("div");
-  userDiv.className = "message user";
-  userDiv.textContent = message;
+  const userDiv =
+    document.createElement("div");
+
+  userDiv.className =
+    "message user";
+
+  userDiv.textContent =
+    message;
+
   chat.appendChild(userDiv);
 
+
   input.value = "";
+
   button.disabled = true;
 
+
   // AI message
-  const aiDiv = document.createElement("div");
-  aiDiv.className = "message ai";
-  aiDiv.textContent = "စဉ်းစားနေပါတယ်...";
+  const aiDiv =
+    document.createElement("div");
+
+  aiDiv.className =
+    "message ai";
+
+  aiDiv.textContent =
+    "စဉ်းစားနေပါတယ်...";
+
   chat.appendChild(aiDiv);
 
-  chat.scrollTop = chat.scrollHeight;
+  chat.scrollTop =
+    chat.scrollHeight;
 
+
+  // Retry 3 times
   const maxRetries = 3;
 
-  try {
+  let success = false;
 
-    let data = null;
 
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+  for (
+    let attempt = 1;
+    attempt <= maxRetries;
+    attempt++
+  ) {
 
-      try {
+    try {
 
-        const response = await fetch(API_URL, {
+      const response =
+        await fetch(API_URL, {
+
           method: "POST",
+
           mode: "cors",
+
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type":
+              "application/json"
           },
+
           body: JSON.stringify({
             message: message
           })
+
         });
 
-        data = await response.json();
 
-        // Success
-        if (data.reply) {
-          aiDiv.textContent = data.reply;
-          break;
-        }
+      const data =
+        await response.json();
 
-        // Gemini 503 → retry
-        if (
-          data.status === 503 ||
-          data.error?.error?.code === 503
-        ) {
 
-          if (attempt < maxRetries) {
-            aiDiv.textContent =
-              "ခဏစောင့်ပါနော်... ပြန်ကြိုးစားနေပါတယ် 🔄";
+      // AI reply
+      if (data.reply) {
 
-            await new Promise(resolve =>
-              setTimeout(resolve, 2000)
-            );
-
-            continue;
-          }
-        }
-
-        // Other error
         aiDiv.textContent =
-          "တစ်ခုခုမှားနေပါတယ်။ ခဏနေပြီး ပြန်စမ်းကြည့်ပါ။";
+          data.reply;
 
-      } catch (error) {
+        success = true;
+
+        break;
+      }
+
+
+      // 503 retry
+      if (
+        data.status === 503 ||
+        data.error?.error?.code === 503
+      ) {
 
         if (attempt < maxRetries) {
 
           aiDiv.textContent =
-            "ဆက်သွယ်နေပါတယ်... 🔄";
+            "ခဏစောင့်ပါနော်... 🔄";
 
-          await new Promise(resolve =>
-            setTimeout(resolve, 2000)
+          await new Promise(
+            resolve =>
+              setTimeout(resolve, 2000)
           );
 
           continue;
-
-        } else {
-
-          aiDiv.textContent =
-            "Server နဲ့ ဆက်သွယ်လို့မရသေးပါ။ ခဏနေပြီး ပြန်စမ်းကြည့်ပါ။";
         }
       }
+
+
+      // Other error
+      aiDiv.textContent =
+        "တစ်ခုခုမှားနေပါတယ်။ ခဏနေပြီး ပြန်စမ်းကြည့်ပါ။";
+
+      break;
+
+
+    } catch (error) {
+
+      if (attempt < maxRetries) {
+
+        aiDiv.textContent =
+          "Server ကို ဆက်သွယ်နေပါတယ်... 🔄";
+
+        await new Promise(
+          resolve =>
+            setTimeout(resolve, 2000)
+        );
+
+      } else {
+
+        aiDiv.textContent =
+          "Server နဲ့ ဆက်သွယ်လို့မရသေးပါ။ ခဏနေပြီး ပြန်စမ်းကြည့်ပါ။";
+      }
+
     }
-
-  } catch (error) {
-
-    aiDiv.textContent =
-      "တစ်ခုခုမှားနေပါတယ်။ ခဏနေပြီး ပြန်စမ်းကြည့်ပါ။";
 
   }
 
+
   button.disabled = false;
+
   input.focus();
-  chat.scrollTop = chat.scrollHeight;
+
+  chat.scrollTop =
+    chat.scrollHeight;
+
 }
- if (!response.ok) {
-  throw new Error("Server error: " + response.status);
- }
 
-  const data = await response.json();
-
-  aiDiv.textContent = JSON.stringify(data);
-
-}  catch (error) {
-  aiDiv.textContent = "ERROR: " + error.message;
- }
-
-button.disabled = false;
-input.focus();
-chat.scrollTop = chat.scrollHeight;
-}
 </script>
 
 </body>
