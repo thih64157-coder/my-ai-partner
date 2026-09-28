@@ -137,31 +137,103 @@ async function sendMessage() {
   // User message
   const userDiv = document.createElement("div");
   userDiv.className = "message user";
-  
-userDiv.textContent = message;
-chat.appendChild(userDiv);
+  userDiv.textContent = message;
+  chat.appendChild(userDiv);
 
-input.value = "";
-button.disabled = true;
+  input.value = "";
+  button.disabled = true;
 
-// AI message
-const aiDiv = document.createElement("div");
-aiDiv.className = "message ai";
-aiDiv.textContent = "စောင့်ပါနော်...";
-chat.appendChild(aiDiv);
+  // AI message
+  const aiDiv = document.createElement("div");
+  aiDiv.className = "message ai";
+  aiDiv.textContent = "စဉ်းစားနေပါတယ်...";
+  chat.appendChild(aiDiv);
 
-chat.scrollTop = chat.scrollHeight;
+  chat.scrollTop = chat.scrollHeight;
 
-try {
-  const response = await fetch(API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      message: message
-    })
-  });
+  const maxRetries = 3;
+
+  try {
+
+    let data = null;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+
+      try {
+
+        const response = await fetch(API_URL, {
+          method: "POST",
+          mode: "cors",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: message
+          })
+        });
+
+        data = await response.json();
+
+        // Success
+        if (data.reply) {
+          aiDiv.textContent = data.reply;
+          break;
+        }
+
+        // Gemini 503 → retry
+        if (
+          data.status === 503 ||
+          data.error?.error?.code === 503
+        ) {
+
+          if (attempt < maxRetries) {
+            aiDiv.textContent =
+              "ခဏစောင့်ပါနော်... ပြန်ကြိုးစားနေပါတယ် 🔄";
+
+            await new Promise(resolve =>
+              setTimeout(resolve, 2000)
+            );
+
+            continue;
+          }
+        }
+
+        // Other error
+        aiDiv.textContent =
+          "တစ်ခုခုမှားနေပါတယ်။ ခဏနေပြီး ပြန်စမ်းကြည့်ပါ။";
+
+      } catch (error) {
+
+        if (attempt < maxRetries) {
+
+          aiDiv.textContent =
+            "ဆက်သွယ်နေပါတယ်... 🔄";
+
+          await new Promise(resolve =>
+            setTimeout(resolve, 2000)
+          );
+
+          continue;
+
+        } else {
+
+          aiDiv.textContent =
+            "Server နဲ့ ဆက်သွယ်လို့မရသေးပါ။ ခဏနေပြီး ပြန်စမ်းကြည့်ပါ။";
+        }
+      }
+    }
+
+  } catch (error) {
+
+    aiDiv.textContent =
+      "တစ်ခုခုမှားနေပါတယ်။ ခဏနေပြီး ပြန်စမ်းကြည့်ပါ။";
+
+  }
+
+  button.disabled = false;
+  input.focus();
+  chat.scrollTop = chat.scrollHeight;
+}
  if (!response.ok) {
   throw new Error("Server error: " + response.status);
  }
