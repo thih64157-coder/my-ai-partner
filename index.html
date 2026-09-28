@@ -168,7 +168,7 @@ try {
 
   const data = await response.json();
 
-  aiDiv.textContent = data.reply || "ပြန်စာမရပါ။";
+  aiDiv.textContent = JSON.stringify(data);
 
 }  catch (error) {
   aiDiv.textContent = "ERROR: " + error.message;
